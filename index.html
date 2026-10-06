@@ -1,1 +1,315 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Edukasi - Guru & Murid Anti Bullying</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(135deg,#111827,#1e293b);color:#fff;min-height:100vh}
+.app{width:min(760px,100%);margin:auto;padding:18px}
+header{text-align:center;padding:12px 0 18px}
+.logo{display:inline-block;background:#f59e0b;color:#111;padding:7px 13px;border-radius:999px;font-weight:900;font-size:12px}
+h1{font-size:29px;margin:12px 0 6px}
+.subtitle{color:#cbd5e1;font-size:14px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:12px}
+.stat{background:#172338;border:1px solid #334155;border-radius:16px;text-align:center;padding:11px}
+.stat b{display:block;font-size:21px}.stat span{font-size:11px;color:#94a3b8}
+.card{background:#162238;border:1px solid #334155;border-radius:20px;padding:18px;box-shadow:0 12px 30px rgba(0,0,0,.2)}
+.progress{height:7px;background:#334155;border-radius:99px;overflow:hidden;margin-bottom:18px}
+.progress div{height:100%;width:0;background:#f59e0b;transition:.3s}
+.icon{height:145px;background:#0d1728;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:70px;margin-bottom:17px}
+.question{font-size:19px;line-height:1.45;font-weight:800;margin-bottom:15px}
+.answers{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button{font:inherit}
+.answer,.mainBtn{min-height:50px;border-radius:13px;border:1px solid #40516b;background:#263752;color:#fff;padding:10px 12px;font-weight:800;cursor:pointer}
+.answer:hover{border-color:#f59e0b}
+.answer.correct{background:#166534;border-color:#22c55e}
+.answer.wrong{background:#991b1b;border-color:#ef4444}
+.answer:disabled{cursor:default}
+.feedback{min-height:46px;padding:12px 2px 2px;font-size:14px;line-height:1.45;font-weight:700}
+.mainBtn{width:100%;background:#f59e0b;color:#111827;border:0;margin-top:8px}
+.secondary{background:#22c55e;color:#fff}
+.hidden{display:none}
+.result{text-align:center}
+.result h2{font-size:26px}
+.resultScore{font-size:56px;font-weight:900;color:#f59e0b;margin:8px 0}
+.resultMessage{color:#cbd5e1;line-height:1.5}
+.badge{display:inline-block;margin:10px auto 2px;padding:8px 14px;border-radius:999px;background:#f59e0b;color:#111827;font-weight:900;font-size:13px}
+.fbBtn{background:#1877f2;color:#fff}
+.smallNote{color:#94a3b8;font-size:12px;margin-top:14px;text-align:center}
+@media(max-width:560px){h1{font-size:24px}.answers{grid-template-columns:1fr}.icon{height:120px}}
+</style>
+</head>
+<body>
+<div class="app">
 
+<header>
+  <div class="logo">GAME EDUKASI GURU & MURID</div>
+  <h1>STOP BULLYING DI SEKOLAH</h1>
+  <div class="subtitle">Uji pemahamanmu tentang sikap aman, empati, dan anti-perundungan • 10 soal • 100 poin</div>
+</header>
+
+<div id="quizArea">
+  <div class="stats">
+    <div class="stat"><b id="score">0</b><span>SKOR</span></div>
+    <div class="stat"><b id="questionCount">1/10</b><span>SOAL</span></div>
+    <div class="stat"><b id="time">15</b><span>DETIK</span></div>
+  </div>
+
+  <div class="card">
+    <div class="progress"><div id="progressBar"></div></div>
+    <div class="icon" id="icon">🤝</div>
+    <div class="question" id="question"></div>
+    <div class="answers" id="answers"></div>
+    <div class="feedback" id="feedback"></div>
+  </div>
+
+  <div class="smallNote">Pilih tindakan yang paling aman, menghargai orang lain, dan membantu menghentikan bullying. Posisi jawaban diacak setiap permainan.</div>
+</div>
+
+<div id="resultArea" class="card result hidden">
+  <div class="logo">HASIL PERMAINAN</div>
+  <h2>SKOR AKHIR</h2>
+  <div class="resultScore" id="finalScore">0 POIN</div>
+  <div id="finalCount">0/10 SOAL BENAR</div>
+  <div class="badge" id="badge">🏆 DUTA ANTI-BULLYING</div>
+  <p class="resultMessage" id="resultMessage"></p>
+  <button class="mainBtn fbBtn" id="facebookBtn">📘 BAGIKAN KE FACEBOOK</button>
+  <button class="mainBtn secondary" id="shareBtn">📤 BAGIKAN HASIL</button>
+  <button class="mainBtn" id="restartBtn">🔄 MAIN LAGI</button>
+</div>
+
+</div>
+
+<script>
+const questions = [
+  {
+    icon:"🛑",
+    q:"Seorang murid terus-menerus diejek karena penampilan fisiknya. Tindakan tersebut termasuk...",
+    answers:["Bullying verbal","Kerja kelompok","Bercanda biasa","Persaingan sehat"],
+    correct:"Bullying verbal"
+  },
+  {
+    icon:"🤝",
+    q:"Jika melihat teman menjadi korban bullying, tindakan yang paling tepat adalah...",
+    answers:["Merekam lalu menyebarkannya","Ikut menertawakan","Membantu korban dan melapor kepada guru/orang dewasa tepercaya","Pura-pura tidak melihat"],
+    correct:"Membantu korban dan melapor kepada guru/orang dewasa tepercaya"
+  },
+  {
+    icon:"💬",
+    q:"Seorang murid mendapat komentar menghina berulang kali di grup kelas. Ini dapat termasuk...",
+    answers:["Bullying siber (cyberbullying)","Diskusi kelas","Umpan balik belajar","Komunikasi biasa"],
+    correct:"Bullying siber (cyberbullying)"
+  },
+  {
+    icon:"👨‍🏫",
+    q:"Ketika guru mengetahui adanya dugaan bullying, langkah awal yang paling tepat adalah...",
+    answers:["Mengabaikannya agar selesai sendiri","Mendengarkan pihak yang terlibat secara aman dan objektif","Mempermalukan pelaku di depan kelas","Langsung menyebarkan ceritanya ke media sosial"],
+    correct:"Mendengarkan pihak yang terlibat secara aman dan objektif"
+  },
+  {
+    icon:"❤️",
+    q:"Kalimat yang paling tepat untuk mendukung korban bullying adalah...",
+    answers:["Kamu terlalu sensitif","Jangan cerita kepada siapa-siapa","Kamu tidak pantas diperlakukan seperti itu. Mari cari bantuan bersama","Biarkan saja, nanti juga berhenti"],
+    correct:"Kamu tidak pantas diperlakukan seperti itu. Mari cari bantuan bersama"
+  },
+  {
+    icon:"📱",
+    q:"Jika menerima pesan yang menghina atau mengancam secara online, sebaiknya...",
+    answers:["Membalas dengan hinaan","Menyebarkan identitas pengirim","Menyimpan bukti dan melapor kepada orang dewasa tepercaya/pihak sekolah","Mengajak teman membalas ramai-ramai"],
+    correct:"Menyimpan bukti dan melapor kepada orang dewasa tepercaya/pihak sekolah"
+  },
+  {
+    icon:"🏫",
+    q:"Budaya kelas yang paling membantu mencegah bullying adalah...",
+    answers:["Membiarkan siswa yang kuat menguasai kelas","Menghargai perbedaan dan membuat aturan saling menghormati","Menertawakan kesalahan teman","Memberi label kepada siswa berdasarkan kemampuan"],
+    correct:"Menghargai perbedaan dan membuat aturan saling menghormati"
+  },
+  {
+    icon:"🗣️",
+    q:"Seorang teman berkata, 'Saya takut masuk kelas karena sering diejek.' Respons yang paling tepat adalah...",
+    answers:["Kamu harus lebih kuat","Itu cuma bercanda","Dengarkan dengan serius, beri dukungan, dan bantu mencari orang yang dapat menolong","Jangan membuat masalah"],
+    correct:"Dengarkan dengan serius, beri dukungan, dan bantu mencari orang yang dapat menolong"
+  },
+  {
+    icon:"⚖️",
+    q:"Mengapa bullying tidak boleh dianggap sebagai 'sekadar bercanda'?",
+    answers:["Karena semua candaan pasti salah","Karena dampaknya dapat menyakiti, membuat takut, dan mengganggu rasa aman seseorang","Karena siswa tidak boleh berbicara","Karena guru harus selalu menghukum"],
+    correct:"Karena dampaknya dapat menyakiti, membuat takut, dan mengganggu rasa aman seseorang"
+  },
+  {
+    icon:"🌱",
+    q:"Sikap yang paling tepat untuk membangun lingkungan sekolah yang aman adalah...",
+    answers:["Diam ketika melihat perundungan","Menghargai orang lain, berani mencari bantuan, dan ikut mencegah bullying","Membalas pelaku dengan kekerasan","Memilih teman berdasarkan status"],
+    correct:"Menghargai orang lain, berani mencari bantuan, dan ikut mencegah bullying"
+  }
+];
+
+let current=0, correctCount=0, score=0, timeLeft=15, timer=null, answered=false, startTime=0, elapsedSeconds=0;
+
+const scoreEl=document.getElementById("score");
+const questionCountEl=document.getElementById("questionCount");
+const timeEl=document.getElementById("time");
+const progressBar=document.getElementById("progressBar");
+const iconEl=document.getElementById("icon");
+const questionEl=document.getElementById("question");
+const answersEl=document.getElementById("answers");
+const feedbackEl=document.getElementById("feedback");
+const quizArea=document.getElementById("quizArea");
+const resultArea=document.getElementById("resultArea");
+const finalScoreEl=document.getElementById("finalScore");
+const finalCountEl=document.getElementById("finalCount");
+const resultMessageEl=document.getElementById("resultMessage");
+const badgeEl=document.getElementById("badge");
+
+function shuffle(array){
+  const arr=[...array];
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+
+function startGame(){
+  clearInterval(timer);
+  current=0; correctCount=0; score=0; elapsedSeconds=0;
+  startTime=Date.now();
+  scoreEl.textContent="0";
+  quizArea.classList.remove("hidden");
+  resultArea.classList.add("hidden");
+  showQuestion();
+}
+
+function showQuestion(){
+  clearInterval(timer);
+  answered=false;
+  timeLeft=15;
+  timeEl.textContent=timeLeft;
+
+  const item=questions[current];
+  questionCountEl.textContent=`${current+1}/${questions.length}`;
+  progressBar.style.width=`${(current/questions.length)*100}%`;
+  iconEl.textContent=item.icon;
+  questionEl.textContent=item.q;
+  feedbackEl.textContent="";
+  feedbackEl.style.color="";
+  answersEl.innerHTML="";
+
+  shuffle(item.answers).forEach((answer,index)=>{
+    const button=document.createElement("button");
+    button.className="answer";
+    button.innerHTML=`<strong>${String.fromCharCode(65+index)}.</strong> ${answer}`;
+    button.addEventListener("click",()=>selectAnswer(button,answer,item.correct));
+    answersEl.appendChild(button);
+  });
+
+  timer=setInterval(()=>{
+    timeLeft--;
+    timeEl.textContent=timeLeft;
+    if(timeLeft<=0){
+      clearInterval(timer);
+      timeUp();
+    }
+  },1000);
+}
+
+function selectAnswer(button,selected,correct){
+  if(answered)return;
+  answered=true;
+  clearInterval(timer);
+
+  const buttons=[...document.querySelectorAll(".answer")];
+  buttons.forEach(btn=>btn.disabled=true);
+
+  if(selected===correct){
+    button.classList.add("correct");
+    correctCount++;
+    score=correctCount*10;
+    scoreEl.textContent=score;
+    feedbackEl.textContent="✅ Benar! Sikap tersebut paling tepat.";
+    feedbackEl.style.color="#4ade80";
+  }else{
+    button.classList.add("wrong");
+    const correctButton=buttons.find(btn=>btn.textContent.includes(correct));
+    if(correctButton)correctButton.classList.add("correct");
+    feedbackEl.textContent=`❌ Kurang tepat. Jawaban yang paling tepat: ${correct}`;
+    feedbackEl.style.color="#fca5a5";
+  }
+
+  setTimeout(nextQuestion,900);
+}
+
+function timeUp(){
+  if(answered)return;
+  answered=true;
+  const buttons=[...document.querySelectorAll(".answer")];
+  buttons.forEach(btn=>btn.disabled=true);
+
+  const correct=questions[current].correct;
+  const correctButton=buttons.find(btn=>btn.textContent.includes(correct));
+  if(correctButton)correctButton.classList.add("correct");
+
+  feedbackEl.textContent=`⏰ Waktu habis. Jawaban yang paling tepat: ${correct}`;
+  feedbackEl.style.color="#fbbf24";
+  setTimeout(nextQuestion,1000);
+}
+
+function nextQuestion(){
+  current++;
+  if(current>=questions.length)finishGame();
+  else showQuestion();
+}
+
+function finishGame(){
+  clearInterval(timer);
+  elapsedSeconds=Math.max(1,Math.round((Date.now()-startTime)/1000));
+  quizArea.classList.add("hidden");
+  resultArea.classList.remove("hidden");
+  finalScoreEl.textContent=`${score} POIN`;
+  finalCountEl.textContent=`${correctCount}/${questions.length} SOAL BENAR`;
+
+  if(score===100){
+    badgeEl.textContent="🏆 DUTA ANTI-BULLYING";
+    resultMessageEl.innerHTML=`🏆 <strong>Sempurna!</strong><br>Kamu memahami prinsip dasar pencegahan bullying dan membangun lingkungan sekolah yang aman.<br><br>Waktu bermain: ${elapsedSeconds} detik`;
+  }else if(score>=80){
+    badgeEl.textContent="🌟 SAHABAT SEKOLAH";
+    resultMessageEl.innerHTML=`🌟 <strong>Sangat bagus!</strong><br>Kamu sudah memahami banyak cara merespons bullying dengan aman dan empati.<br><br>Waktu bermain: ${elapsedSeconds} detik`;
+  }else if(score>=60){
+    badgeEl.textContent="👍 PEDULI SESAMA";
+    resultMessageEl.innerHTML=`👍 <strong>Cukup bagus!</strong><br>Terus belajar tentang empati, keberanian mencari bantuan, dan budaya saling menghormati.<br><br>Waktu bermain: ${elapsedSeconds} detik`;
+  }else{
+    badgeEl.textContent="💪 PEJUANG BELAJAR";
+    resultMessageEl.innerHTML=`💪 <strong>Ayo belajar lagi!</strong><br>Kenali lebih baik tindakan yang aman ketika menghadapi atau melihat bullying.<br><br>Waktu bermain: ${elapsedSeconds} detik`;
+  }
+}
+
+document.getElementById("restartBtn").addEventListener("click",startGame);
+
+document.getElementById("facebookBtn").addEventListener("click",()=>{
+  const shareUrl=encodeURIComponent(window.location.href);
+  const fbUrl=`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`;
+  window.open(fbUrl,"_blank","noopener,noreferrer,width=700,height=650");
+});
+
+document.getElementById("shareBtn").addEventListener("click",async()=>{
+  const shareText=`Saya mendapat ${score} POIN (${correctCount}/10 benar) di Game Guru & Murid - Stop Bullying! Berani dapat 100/100?`;
+  if(navigator.share){
+    try{
+      await navigator.share({title:"Guru & Murid - Stop Bullying",text:shareText,url:window.location.href});
+    }catch(e){}
+  }else{
+    try{
+      await navigator.clipboard.writeText(`${shareText}\n${window.location.href}`);
+      alert("Hasil dan link game sudah disalin. Silakan tempel di Facebook.");
+    }catch(e){
+      prompt("Salin teks berikut:",`${shareText}\n${window.location.href}`);
+    }
+  }
+});
+
+startGame();
+</script>
+</body>
+</html>
